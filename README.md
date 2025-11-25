@@ -1,5 +1,11 @@
 # @shipi18n/cli
 
+[![npm version](https://img.shields.io/npm/v/@shipi18n/cli)](https://www.npmjs.com/package/@shipi18n/cli)
+[![npm downloads](https://img.shields.io/npm/dw/@shipi18n/cli)](https://www.npmjs.com/package/@shipi18n/cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Shipi18n/shipi18n-cli)](https://github.com/Shipi18n/shipi18n-cli)
+[![CI](https://github.com/Shipi18n/shipi18n-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/Shipi18n/shipi18n-cli/actions)
+
 Command-line tool for translating locale files with [Shipi18n](https://shipi18n.com).
 
 > **🚀 Translate JSON files in seconds** - One command, multiple languages!
