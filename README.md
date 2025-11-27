@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub last commit](https://img.shields.io/github/last-commit/Shipi18n/shipi18n-cli)](https://github.com/Shipi18n/shipi18n-cli)
 [![CI](https://github.com/Shipi18n/shipi18n-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/Shipi18n/shipi18n-cli/actions)
+[![codecov](https://codecov.io/gh/Shipi18n/shipi18n-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/Shipi18n/shipi18n-cli)
 
 Command-line tool for translating locale files with [Shipi18n](https://shipi18n.com).
 

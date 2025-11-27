@@ -30,6 +30,18 @@ jobs:
         run: npm test
         continue-on-error: true
 
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/clcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
       - name: Run lint (if available)
         run: npm run lint --if-present
 
