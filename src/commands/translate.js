@@ -14,6 +14,8 @@ export function translateCommand(program) {
     .option('-o, --output <dir>', 'Output directory', './locales')
     .option('--api-key <key>', 'API key (overrides config)')
     .option('--preserve-placeholders', 'Preserve placeholders like {name}, {{value}}, etc.', true)
+    .option('--no-fallback', 'Disable fallback to source language for missing translations')
+    .option('--no-regional-fallback', 'Disable regional fallback (e.g., pt-BR -> pt)')
     .action(async (input, options) => {
       const spinner = logger.spinner('Translating...');
 
@@ -54,13 +56,17 @@ export function translateCommand(program) {
 
         spinner.text = `Translating to ${targetLanguages.length} language${targetLanguages.length > 1 ? 's' : ''}...`;
 
-        // Translate
+        // Translate with fallback support
         const api = new Shipi18nAPI(apiKey);
         const translations = await api.translateJSON({
           json,
           sourceLanguage,
           targetLanguages,
           preservePlaceholders: options.preservePlaceholders,
+          fallback: {
+            fallbackToSource: options.fallback !== false,
+            regionalFallback: options.regionalFallback !== false,
+          },
         });
 
         spinner.succeed(chalk.green(`Translated to ${targetLanguages.length} language${targetLanguages.length > 1 ? 's' : ''}!`));
@@ -73,7 +79,7 @@ export function translateCommand(program) {
 
         let savedCount = 0;
         for (const [langCode, content] of Object.entries(translations)) {
-          if (langCode === 'warnings') continue;
+          if (langCode === 'warnings' || langCode === 'fallbackInfo' || langCode === 'namespaceInfo') continue;
 
           const outputFile = join(outputDir, `${langCode}.json`);
           writeFileSync(outputFile, JSON.stringify(content, null, 2), 'utf8');
@@ -81,8 +87,42 @@ export function translateCommand(program) {
           savedCount++;
         }
 
+        // Show fallback info if any fallbacks were used
+        if (translations.fallbackInfo && translations.fallbackInfo.used) {
+          const fallbackInfo = translations.fallbackInfo;
+          logger.log('');
+          logger.info('Fallback information:');
+
+          // Regional fallbacks
+          if (Object.keys(fallbackInfo.regionalFallbacks).length > 0) {
+            for (const [lang, baseLang] of Object.entries(fallbackInfo.regionalFallbacks)) {
+              logger.log(`  ${chalk.blue('•')} ${lang} → ${baseLang} ${chalk.gray('(regional fallback)')}`);
+            }
+          }
+
+          // Languages that fell back to source
+          if (fallbackInfo.languagesFallbackToSource.length > 0) {
+            for (const lang of fallbackInfo.languagesFallbackToSource) {
+              logger.log(`  ${chalk.yellow('•')} ${lang} → ${sourceLanguage} ${chalk.gray('(source fallback)')}`);
+            }
+          }
+
+          // Keys that used fallback
+          if (Object.keys(fallbackInfo.keysFallback).length > 0) {
+            for (const [lang, keys] of Object.entries(fallbackInfo.keysFallback)) {
+              logger.log(`  ${chalk.yellow('•')} ${lang}: ${keys.length} key${keys.length > 1 ? 's' : ''} used fallback`);
+              if (keys.length <= 5) {
+                keys.forEach(key => {
+                  logger.log(`    ${chalk.gray('- ' + key)}`);
+                });
+              }
+            }
+          }
+        }
+
         // Show warnings if any
         if (translations.warnings && translations.warnings.length > 0) {
+          logger.log('');
           logger.warn('Warnings:');
           translations.warnings.forEach(warning => {
             logger.log(`  ${chalk.yellow('•')} ${warning.message}`);
