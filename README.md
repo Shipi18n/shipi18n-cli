@@ -419,19 +419,40 @@ npm link
 shipi18n --help
 ```
 
+## Documentation & Resources
+
+📚 **Full Documentation:** [shipi18n.com/integrations/cli](https://shipi18n.com/integrations/cli)
+
+| Resource | Link |
+|----------|------|
+| **Getting Started** | [shipi18n.com](https://shipi18n.com) |
+| **API Reference** | [shipi18n.com/api](https://shipi18n.com/api) |
+| **i18next Best Practices** | [shipi18n.com/integrations/react](https://shipi18n.com/integrations/react) |
+| **Blog & Tutorials** | [shipi18n.com/blog](https://shipi18n.com/blog) |
+
+## Related Packages
+
+| Package | Description |
+|---------|-------------|
+| [@shipi18n/api](https://www.npmjs.com/package/@shipi18n/api) | Node.js SDK for programmatic use |
+| [vite-plugin-shipi18n](https://www.npmjs.com/package/vite-plugin-shipi18n) | Vite plugin for build-time translation |
+| [i18next-shipi18n-backend](https://www.npmjs.com/package/i18next-shipi18n-backend) | i18next backend for dynamic loading |
+| [shipi18n-github-action](https://github.com/marketplace/actions/shipi18n-auto-translate) | GitHub Action for CI/CD |
+
+## Examples
+
+- [Node.js Example](https://github.com/Shipi18n/shipi18n-nodejs-example) - Basic usage examples
+- [Vue Example](https://github.com/Shipi18n/shipi18n-vue-example) - Vue 3 + vue-i18n integration
+
 ## License
 
 MIT
 
-## Links
-
-- [Shipi18n Website](https://shipi18n.com)
-- [Documentation](https://shipi18n.com/docs)
-- [API Reference](https://shipi18n.com/docs/api)
-- [GitHub](https://github.com/Shipi18n/shipi18n-cli)
-- [Support](https://github.com/Shipi18n/shipi18n-cli/issues)
-
 ---
 
-Built with ❤️ by [Shipi18n](https://shipi18n.com) - Smart translation API for developers
+<p align="center">
+  <a href="https://shipi18n.com">shipi18n.com</a> ·
+  <a href="https://github.com/Shipi18n">GitHub</a> ·
+  <a href="https://shipi18n.com/pricing">Pricing</a>
+</p>
 
