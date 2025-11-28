@@ -89,6 +89,8 @@ shipi18n translate <input> [options]
 - `-o, --output <dir>` - Output directory (default: `./locales`)
 - `--api-key <key>` - API key (overrides config)
 - `--preserve-placeholders` - Preserve placeholders (default: `true`)
+- `--no-fallback` - Disable fallback to source for missing translations
+- `--no-regional-fallback` - Disable regional fallback (e.g., pt-BR → pt)
 
 **Examples:**
 
@@ -104,6 +106,48 @@ shipi18n translate ja.json --source ja --target en,es
 
 # Use inline API key
 shipi18n translate en.json --target es --api-key sk_live_...
+
+# Translate with regional variants (pt-BR will fallback to pt if needed)
+shipi18n translate en.json --target es,pt-BR,zh-TW
+
+# Disable fallback (strict mode - fail if translation missing)
+shipi18n translate en.json --target es --no-fallback
+```
+
+### Fallback Behavior
+
+By default, the CLI handles missing translations gracefully:
+
+| Scenario | Default Behavior |
+|----------|-----------------|
+| Missing translation for a language | Uses source content (English) |
+| Missing regional variant (pt-BR) | Falls back to base language (pt), then source |
+| Missing translation for a key | Fills from source content |
+
+**Fallback output example:**
+```
+✓ Translated to 3 languages!
+✓ Saved: ./locales/es.json
+✓ Saved: ./locales/pt-BR.json
+✓ Saved: ./locales/zh-TW.json
+
+Fallback information:
+  • pt-BR → pt (regional fallback)
+  • zh-TW → en (source fallback)
+  • es: 2 keys used fallback
+    - checkout.terms
+    - checkout.privacy
+
+✨ Successfully translated 3 files!
+```
+
+**Disable fallback:**
+```bash
+# Strict mode - no fallback to source
+shipi18n translate en.json --target es --no-fallback
+
+# Disable regional fallback only (pt-BR won't fall back to pt)
+shipi18n translate en.json --target pt-BR --no-regional-fallback
 ```
 
 ### Keys Management
