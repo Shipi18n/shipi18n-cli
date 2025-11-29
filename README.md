@@ -11,6 +11,14 @@ Command-line tool for translating locale files with [Shipi18n](https://shipi18n.
 
 > **🚀 Translate JSON files in seconds** - One command, multiple languages!
 
+## Why Shipi18n CLI?
+
+- **Stop copy-pasting into Google Translate** - One command translates to 100+ languages
+- **Placeholders stay intact** - `{name}`, `{{count}}`, `%s` are preserved automatically
+- **Works with your existing setup** - Drop into any React, Vue, Next.js, i18next project
+- **90-day Translation Memory** - Same content? Cached. No extra cost.
+- **Free tier included** - 100 keys, 3 languages, no credit card required
+
 ## Features
 
 - ✅ **Translate JSON files** to 100+ languages with one command

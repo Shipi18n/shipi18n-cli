@@ -1,6 +1,6 @@
 {
   "name": "@shipi18n/cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Command-line tool for translating locale files with Shipi18n",
   "main": "src/index.js",
   "type": "module",
@@ -23,11 +23,20 @@
     "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage"
   },
   "keywords": [
-    "translation",
     "i18n",
-    "internationalization",
+    "translation",
     "localization",
+    "internationalization",
+    "locale",
+    "translate",
     "cli",
+    "i18next",
+    "react-intl",
+    "json-translation",
+    "locale-files",
+    "multilingual",
+    "l10n",
+    "ai-translation",
     "shipi18n"
   ],
   "author": "Shipi18n",
