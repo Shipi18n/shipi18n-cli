@@ -5,6 +5,73 @@ import { Shipi18nAPI } from '../lib/api.js';
 import { getConfig } from '../lib/config.js';
 import { logger, formatError } from '../utils/logger.js';
 
+/**
+ * Flatten a nested object into dot-notation keys
+ */
+function flattenObject(obj, prefix = '') {
+  const result = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(result, flattenObject(value, newKey));
+    } else {
+      result[newKey] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * Unflatten dot-notation keys back into nested object
+ */
+function unflattenObject(obj) {
+  const result = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const keys = key.split('.');
+    let current = result;
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (!current[keys[i]]) {
+        current[keys[i]] = {};
+      }
+      current = current[keys[i]];
+    }
+    current[keys[keys.length - 1]] = value;
+  }
+  return result;
+}
+
+/**
+ * Deep merge two objects
+ */
+function deepMerge(target, source) {
+  const result = { ...target };
+  for (const [key, value] of Object.entries(source)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      result[key] = deepMerge(result[key] || {}, value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * Find keys that exist in source but not in target
+ */
+function findMissingKeys(sourceJson, targetJson) {
+  const sourceFlat = flattenObject(sourceJson);
+  const targetFlat = flattenObject(targetJson);
+
+  const missingKeys = {};
+  for (const [key, value] of Object.entries(sourceFlat)) {
+    if (!(key in targetFlat)) {
+      missingKeys[key] = value;
+    }
+  }
+
+  return unflattenObject(missingKeys);
+}
+
 export function translateCommand(program) {
   program
     .command('translate <input>')
@@ -16,6 +83,7 @@ export function translateCommand(program) {
     .option('--preserve-placeholders', 'Preserve placeholders like {name}, {{value}}, etc.', true)
     .option('--no-fallback', 'Disable fallback to source language for missing translations')
     .option('--no-regional-fallback', 'Disable regional fallback (e.g., pt-BR -> pt)')
+    .option('-i, --incremental', 'Only translate new/missing keys (skip existing translations)')
     .action(async (input, options) => {
       const spinner = logger.spinner('Translating...');
 
@@ -53,13 +121,79 @@ export function translateCommand(program) {
         // Parse target languages
         const targetLanguages = options.target.split(',').map(lang => lang.trim());
         const sourceLanguage = options.source;
+        const outputDir = options.output;
+        const inputFileName = parse(input).name;
 
-        spinner.text = `Translating to ${targetLanguages.length} language${targetLanguages.length > 1 ? 's' : ''}...`;
+        // Incremental mode: load existing translations and find missing keys
+        let jsonToTranslate = json;
+        const existingTranslations = {};
+        let incrementalStats = { total: 0, existing: 0, toTranslate: 0 };
+
+        if (options.incremental) {
+          spinner.text = 'Checking existing translations...';
+
+          const sourceKeyCount = Object.keys(flattenObject(json)).length;
+          incrementalStats.total = sourceKeyCount;
+
+          // Load existing translations for each target language
+          for (const lang of targetLanguages) {
+            const targetFile = join(outputDir, lang, `${inputFileName}.json`);
+            const altTargetFile = join(outputDir, `${lang}.json`);
+
+            let existingFile = null;
+            if (existsSync(targetFile)) {
+              existingFile = targetFile;
+            } else if (existsSync(altTargetFile)) {
+              existingFile = altTargetFile;
+            }
+
+            if (existingFile) {
+              try {
+                const existingContent = readFileSync(existingFile, 'utf8');
+                existingTranslations[lang] = JSON.parse(existingContent);
+              } catch (e) {
+                logger.warn(`Could not parse ${existingFile}, will re-translate`);
+              }
+            }
+          }
+
+          // Find keys that need translation (missing from ANY target language)
+          const allMissingKeys = {};
+          for (const lang of targetLanguages) {
+            const existing = existingTranslations[lang] || {};
+            const missing = findMissingKeys(json, existing);
+            const missingFlat = flattenObject(missing);
+
+            for (const [key, value] of Object.entries(missingFlat)) {
+              if (!(key in allMissingKeys)) {
+                allMissingKeys[key] = value;
+              }
+            }
+          }
+
+          const missingKeyCount = Object.keys(allMissingKeys).length;
+          incrementalStats.existing = sourceKeyCount - missingKeyCount;
+          incrementalStats.toTranslate = missingKeyCount;
+
+          if (missingKeyCount === 0) {
+            spinner.succeed(chalk.green('All translations up to date!'));
+            logger.log('');
+            logger.log(chalk.gray(`   ${sourceKeyCount} key${sourceKeyCount !== 1 ? 's' : ''} already translated`));
+            return;
+          }
+
+          jsonToTranslate = unflattenObject(allMissingKeys);
+          spinner.text = `Translating ${missingKeyCount} new key${missingKeyCount !== 1 ? 's' : ''} to ${targetLanguages.length} language${targetLanguages.length > 1 ? 's' : ''}...`;
+          logger.log('');
+          logger.info(`Incremental mode: ${chalk.cyan(missingKeyCount)} new key${missingKeyCount !== 1 ? 's' : ''} to translate (${incrementalStats.existing} already exist)`);
+        } else {
+          spinner.text = `Translating to ${targetLanguages.length} language${targetLanguages.length > 1 ? 's' : ''}...`;
+        }
 
         // Translate with fallback support
         const api = new Shipi18nAPI(apiKey);
         const translations = await api.translateJSON({
-          json,
+          json: jsonToTranslate,
           sourceLanguage,
           targetLanguages,
           preservePlaceholders: options.preservePlaceholders,
@@ -69,10 +203,10 @@ export function translateCommand(program) {
           },
         });
 
-        spinner.succeed(chalk.green(`Translated to ${targetLanguages.length} language${targetLanguages.length > 1 ? 's' : ''}!`));
+        const keyCount = Object.keys(flattenObject(jsonToTranslate)).length;
+        spinner.succeed(chalk.green(`Translated ${keyCount} key${keyCount !== 1 ? 's' : ''} to ${targetLanguages.length} language${targetLanguages.length > 1 ? 's' : ''}!`));
 
         // Save translated files
-        const outputDir = options.output;
         if (!existsSync(outputDir)) {
           mkdirSync(outputDir, { recursive: true });
         }
@@ -81,9 +215,15 @@ export function translateCommand(program) {
         for (const [langCode, content] of Object.entries(translations)) {
           if (langCode === 'warnings' || langCode === 'fallbackInfo' || langCode === 'namespaceInfo') continue;
 
+          // In incremental mode, merge with existing translations
+          let finalContent = content;
+          if (options.incremental && existingTranslations[langCode]) {
+            finalContent = deepMerge(existingTranslations[langCode], content);
+          }
+
           const outputFile = join(outputDir, `${langCode}.json`);
-          writeFileSync(outputFile, JSON.stringify(content, null, 2), 'utf8');
-          logger.success(`Saved: ${chalk.cyan(outputFile)}`);
+          writeFileSync(outputFile, JSON.stringify(finalContent, null, 2), 'utf8');
+          logger.success(`Saved: ${chalk.cyan(outputFile)}${options.incremental ? chalk.gray(' (merged)') : ''}`);
           savedCount++;
         }
 
