@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-const API_BASE_URL = process.env.SHIPI18N_API_URL || 'https://x9527l3blg.execute-api.us-east-1.amazonaws.com';
+const API_BASE_URL = process.env.SHIPI18N_API_URL || 'https://ydjkwckq3f.execute-api.us-east-1.amazonaws.com';
 
 /**
  * Shipi18n API Client
