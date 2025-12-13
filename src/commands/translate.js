@@ -15,6 +15,7 @@ export function translateCommand(program) {
     .option('-o, --output <dir>', 'Output directory', './locales')
     .option('--api-key <key>', 'API key (overrides config)')
     .option('--preserve-placeholders', 'Preserve placeholders like {name}, {{value}}, etc.', true)
+    .option('--html-handling <mode>', 'How to handle HTML in source text: none, strip, decode, preserve', 'none')
     .option('--no-fallback', 'Disable fallback to source language for missing translations')
     .option('--no-regional-fallback', 'Disable regional fallback (e.g., pt-BR -> pt)')
     .option('-i, --incremental', 'Only translate new/missing keys (skip existing translations)')
@@ -131,6 +132,7 @@ export function translateCommand(program) {
           sourceLanguage,
           targetLanguages,
           preservePlaceholders: options.preservePlaceholders,
+          htmlHandling: options.htmlHandling,
           fallback: {
             fallbackToSource: options.fallback !== false,
             regionalFallback: options.regionalFallback !== false,

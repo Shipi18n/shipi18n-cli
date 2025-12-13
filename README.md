@@ -97,6 +97,11 @@ shipi18n translate <input> [options]
 - `-o, --output <dir>` - Output directory (default: `./locales`)
 - `--api-key <key>` - API key (overrides config)
 - `--preserve-placeholders` - Preserve placeholders (default: `true`)
+- `--html-handling <mode>` - How to handle HTML in source text (default: `none`)
+  - `none` - Leave HTML as-is
+  - `strip` - Remove all HTML tags
+  - `decode` - Decode HTML entities (`&amp;` → `&`)
+  - `preserve` - Keep HTML tags and translate text between them
 - `--no-fallback` - Disable fallback to source for missing translations
 - `--no-regional-fallback` - Disable regional fallback (e.g., pt-BR → pt)
 

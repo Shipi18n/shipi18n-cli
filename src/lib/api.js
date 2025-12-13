@@ -19,6 +19,7 @@ export class Shipi18nAPI {
    * @param {string} options.sourceLanguage - Source language code
    * @param {string[]} options.targetLanguages - Target language codes
    * @param {boolean} options.preservePlaceholders - Preserve placeholders
+   * @param {string} options.htmlHandling - How to handle HTML: none, strip, decode, preserve
    * @param {Object} options.fallback - Fallback options
    * @param {boolean} options.fallback.fallbackToSource - Use source content when translation missing (default: true)
    * @param {boolean} options.fallback.regionalFallback - Enable pt-BR -> pt fallback (default: true)
@@ -29,6 +30,7 @@ export class Shipi18nAPI {
     sourceLanguage = 'en',
     targetLanguages,
     preservePlaceholders = true,
+    htmlHandling = 'none',
     fallback = {}
   }) {
     if (!this.apiKey) {
@@ -59,6 +61,7 @@ export class Shipi18nAPI {
         sourceLanguage,
         targetLanguages: JSON.stringify(processedTargets),
         preservePlaceholders: String(preservePlaceholders),
+        htmlHandling,
       }),
     });
 
