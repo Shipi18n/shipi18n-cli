@@ -104,6 +104,9 @@ shipi18n translate <input> [options]
   - `preserve` - Keep HTML tags and translate text between them
 - `--no-fallback` - Disable fallback to source for missing translations
 - `--no-regional-fallback` - Disable regional fallback (e.g., pt-BR → pt)
+- `-i, --incremental` - Only translate new/missing keys (skip existing translations)
+- `--skip-keys <keys>` - Keys to skip from translation (comma-separated exact paths)
+- `--skip-paths <patterns>` - Path patterns to skip (comma-separated, supports wildcards like `nav.*`)
 
 **Examples:**
 
@@ -125,6 +128,17 @@ shipi18n translate en.json --target es,pt-BR,zh-TW
 
 # Disable fallback (strict mode - fail if translation missing)
 shipi18n translate en.json --target es --no-fallback
+
+# Skip specific keys from translation (e.g., US state names, brand names)
+shipi18n translate en.json --target es --skip-keys "states.CA,states.NY,company.name"
+
+# Skip keys using glob patterns (e.g., all states, all config secrets)
+shipi18n translate en.json --target es --skip-paths "states.*,config.*.secret"
+
+# Combined - skip exact keys and patterns
+shipi18n translate en.json --target es,fr \
+  --skip-keys "brandName" \
+  --skip-paths "states.*,internal.*"
 ```
 
 ### Fallback Behavior
@@ -161,6 +175,39 @@ shipi18n translate en.json --target es --no-fallback
 
 # Disable regional fallback only (pt-BR won't fall back to pt)
 shipi18n translate en.json --target pt-BR --no-regional-fallback
+```
+
+### Skipping Keys
+
+Exclude specific keys or patterns from translation - useful for brand names, US state codes, or config values that should stay in English:
+
+```bash
+# Skip exact key paths
+shipi18n translate en.json --target es --skip-keys "company.name,legal.terms"
+
+# Skip using glob patterns
+shipi18n translate en.json --target es --skip-paths "states.*,config.*.internal"
+```
+
+**Pattern Matching:**
+| Pattern | Matches |
+|---------|---------|
+| `states.CA` | Exact path only |
+| `states.*` | `states.CA`, `states.NY`, etc. (single level) |
+| `config.*.secret` | `config.api.secret`, `config.db.secret` |
+| `**.internal` | Any path ending with `.internal` |
+
+**Example output with skipped keys:**
+```
+✓ Translated 45 keys to 2 languages!
+ℹ Skipped 5 key(s) from translation:
+  • states.CA
+  • states.NY
+  • states.TX
+  • company.name
+  • config.api.secret
+
+✨ Successfully translated 2 files!
 ```
 
 ### Keys Management

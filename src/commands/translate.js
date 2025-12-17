@@ -19,6 +19,8 @@ export function translateCommand(program) {
     .option('--no-fallback', 'Disable fallback to source language for missing translations')
     .option('--no-regional-fallback', 'Disable regional fallback (e.g., pt-BR -> pt)')
     .option('-i, --incremental', 'Only translate new/missing keys (skip existing translations)')
+    .option('--skip-keys <keys>', 'Keys to skip from translation (comma-separated exact paths)')
+    .option('--skip-paths <patterns>', 'Paths to skip using wildcards (comma-separated, e.g., "states.*,config.*.secret")')
     .action(async (input, options) => {
       const spinner = logger.spinner('Translating...');
 
@@ -58,6 +60,18 @@ export function translateCommand(program) {
         const sourceLanguage = options.source;
         const outputDir = options.output;
         const inputFileName = parse(input).name;
+
+        // Parse skip options
+        const skipKeys = options.skipKeys
+          ? options.skipKeys.split(',').map(k => k.trim())
+          : [];
+        const skipPaths = options.skipPaths
+          ? options.skipPaths.split(',').map(p => p.trim())
+          : [];
+
+        if (skipKeys.length > 0 || skipPaths.length > 0) {
+          logger.info(`Skipping ${skipKeys.length + skipPaths.length} key/pattern(s) from translation`);
+        }
 
         // Incremental mode: load existing translations and find missing keys
         let jsonToTranslate = json;
@@ -137,6 +151,8 @@ export function translateCommand(program) {
             fallbackToSource: options.fallback !== false,
             regionalFallback: options.regionalFallback !== false,
           },
+          skipKeys,
+          skipPaths,
         });
 
         const keyCount = Object.keys(flattenObject(jsonToTranslate)).length;
@@ -149,7 +165,7 @@ export function translateCommand(program) {
 
         let savedCount = 0;
         for (const [langCode, content] of Object.entries(translations)) {
-          if (langCode === 'warnings' || langCode === 'fallbackInfo' || langCode === 'namespaceInfo') continue;
+          if (langCode === 'warnings' || langCode === 'fallbackInfo' || langCode === 'namespaceInfo' || langCode === 'skipped') continue;
 
           // In incremental mode, merge with existing translations
           let finalContent = content;
@@ -193,6 +209,19 @@ export function translateCommand(program) {
                 });
               }
             }
+          }
+        }
+
+        // Show skipped keys info if any
+        if (translations.skipped && translations.skipped.count > 0) {
+          logger.log('');
+          logger.info(`Skipped ${translations.skipped.count} key${translations.skipped.count > 1 ? 's' : ''} from translation:`);
+          const keysToShow = translations.skipped.keys.slice(0, 10);
+          keysToShow.forEach(key => {
+            logger.log(`  ${chalk.gray('•')} ${key}`);
+          });
+          if (translations.skipped.keys.length > 10) {
+            logger.log(`  ${chalk.gray(`... and ${translations.skipped.keys.length - 10} more`)}`);
           }
         }
 

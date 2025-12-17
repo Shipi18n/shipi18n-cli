@@ -24,6 +24,8 @@ export class Shipi18nAPI {
    * @param {boolean} options.fallback.fallbackToSource - Use source content when translation missing (default: true)
    * @param {boolean} options.fallback.regionalFallback - Enable pt-BR -> pt fallback (default: true)
    * @param {string} options.fallback.fallbackLanguage - Custom fallback language
+   * @param {string[]} options.skipKeys - Exact key paths to skip from translation
+   * @param {string[]} options.skipPaths - Glob patterns to skip (e.g., "nav.*", "config.*.secret")
    */
   async translateJSON({
     json,
@@ -31,7 +33,9 @@ export class Shipi18nAPI {
     targetLanguages,
     preservePlaceholders = true,
     htmlHandling = 'none',
-    fallback = {}
+    fallback = {},
+    skipKeys = [],
+    skipPaths = [],
   }) {
     if (!this.apiKey) {
       throw new Error('API key is required. Set SHIPI18N_API_KEY or run: shipi18n config set apiKey YOUR_KEY');
@@ -62,6 +66,8 @@ export class Shipi18nAPI {
         targetLanguages: JSON.stringify(processedTargets),
         preservePlaceholders: String(preservePlaceholders),
         htmlHandling,
+        skipKeys,
+        skipPaths,
       }),
     });
 
@@ -78,7 +84,7 @@ export class Shipi18nAPI {
     // Parse JSON strings back to objects
     const parsed = {};
     for (const [lang, jsonStr] of Object.entries(result)) {
-      if (lang === 'warnings' || lang === 'namespaceInfo') {
+      if (lang === 'warnings' || lang === 'namespaceInfo' || lang === 'skipped') {
         parsed[lang] = jsonStr;
         continue;
       }
