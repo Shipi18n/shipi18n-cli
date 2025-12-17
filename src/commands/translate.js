@@ -21,6 +21,7 @@ export function translateCommand(program) {
     .option('-i, --incremental', 'Only translate new/missing keys (skip existing translations)')
     .option('--skip-keys <keys>', 'Keys to skip from translation (comma-separated exact paths)')
     .option('--skip-paths <patterns>', 'Paths to skip using wildcards (comma-separated, e.g., "states.*,config.*.secret")')
+    .option('--context-file <path>', 'JSON file with context annotations for disambiguation (e.g., {"close": "button - dismiss"})')
     .action(async (input, options) => {
       const spinner = logger.spinner('Translating...');
 
@@ -71,6 +72,26 @@ export function translateCommand(program) {
 
         if (skipKeys.length > 0 || skipPaths.length > 0) {
           logger.info(`Skipping ${skipKeys.length + skipPaths.length} key/pattern(s) from translation`);
+        }
+
+        // Parse context annotations file
+        let contextAnnotations = {};
+        if (options.contextFile) {
+          if (!existsSync(options.contextFile)) {
+            spinner.fail();
+            logger.error(`Context file not found: ${options.contextFile}`);
+            process.exit(1);
+          }
+          try {
+            const contextContent = readFileSync(options.contextFile, 'utf8');
+            contextAnnotations = JSON.parse(contextContent);
+            const contextCount = Object.keys(contextAnnotations).length;
+            logger.info(`Loaded ${contextCount} context annotation(s) from ${options.contextFile}`);
+          } catch (error) {
+            spinner.fail();
+            logger.error(`Invalid JSON in context file: ${error.message}`);
+            process.exit(1);
+          }
         }
 
         // Incremental mode: load existing translations and find missing keys
@@ -153,6 +174,7 @@ export function translateCommand(program) {
           },
           skipKeys,
           skipPaths,
+          contextAnnotations,
         });
 
         const keyCount = Object.keys(flattenObject(jsonToTranslate)).length;
@@ -222,6 +244,19 @@ export function translateCommand(program) {
           });
           if (translations.skipped.keys.length > 10) {
             logger.log(`  ${chalk.gray(`... and ${translations.skipped.keys.length - 10} more`)}`);
+          }
+        }
+
+        // Show context-enhanced keys info if any
+        if (translations.contextEnhanced && translations.contextEnhanced.count > 0) {
+          logger.log('');
+          logger.info(`${chalk.cyan('🎯')} ${translations.contextEnhanced.count} key${translations.contextEnhanced.count > 1 ? 's' : ''} translated with context annotations:`);
+          const keysToShow = translations.contextEnhanced.keys.slice(0, 10);
+          keysToShow.forEach(key => {
+            logger.log(`  ${chalk.cyan('•')} ${key}`);
+          });
+          if (translations.contextEnhanced.keys.length > 10) {
+            logger.log(`  ${chalk.gray(`... and ${translations.contextEnhanced.keys.length - 10} more`)}`);
           }
         }
 

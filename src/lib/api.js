@@ -26,6 +26,7 @@ export class Shipi18nAPI {
    * @param {string} options.fallback.fallbackLanguage - Custom fallback language
    * @param {string[]} options.skipKeys - Exact key paths to skip from translation
    * @param {string[]} options.skipPaths - Glob patterns to skip (e.g., "nav.*", "config.*.secret")
+   * @param {Object} options.contextAnnotations - Per-key context hints for disambiguation
    */
   async translateJSON({
     json,
@@ -36,6 +37,7 @@ export class Shipi18nAPI {
     fallback = {},
     skipKeys = [],
     skipPaths = [],
+    contextAnnotations = {},
   }) {
     if (!this.apiKey) {
       throw new Error('API key is required. Set SHIPI18N_API_KEY or run: shipi18n config set apiKey YOUR_KEY');
@@ -68,6 +70,7 @@ export class Shipi18nAPI {
         htmlHandling,
         skipKeys,
         skipPaths,
+        contextAnnotations,
       }),
     });
 
@@ -84,7 +87,7 @@ export class Shipi18nAPI {
     // Parse JSON strings back to objects
     const parsed = {};
     for (const [lang, jsonStr] of Object.entries(result)) {
-      if (lang === 'warnings' || lang === 'namespaceInfo' || lang === 'skipped') {
+      if (lang === 'warnings' || lang === 'namespaceInfo' || lang === 'skipped' || lang === 'contextEnhanced') {
         parsed[lang] = jsonStr;
         continue;
       }
