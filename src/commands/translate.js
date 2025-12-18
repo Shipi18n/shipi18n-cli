@@ -260,11 +260,26 @@ export function translateCommand(program) {
           }
         }
 
-        // Show warnings if any
-        if (translations.warnings && translations.warnings.length > 0) {
+        // Show legal content warning with key details
+        const legalWarning = translations.warnings?.find(w => w.type === 'legal_content');
+        if (legalWarning?.details?.keys?.length > 0) {
+          logger.log('');
+          logger.warn(`${chalk.yellow('⚠️')}  Legal content detected - review these keys:`);
+          legalWarning.details.keys.forEach(key => {
+            logger.log(`  ${chalk.yellow('•')} ${key}`);
+          });
+          if (legalWarning.details.count > 10) {
+            logger.log(`  ${chalk.gray(`... and ${legalWarning.details.count - 10} more`)}`);
+          }
+          logger.log(`  ${chalk.gray('Machine-translated legal text may not be legally binding.')}`);
+        }
+
+        // Show other warnings if any (exclude legal_content since we showed it above)
+        const otherWarnings = translations.warnings?.filter(w => w.type !== 'legal_content') || [];
+        if (otherWarnings.length > 0) {
           logger.log('');
           logger.warn('Warnings:');
-          translations.warnings.forEach(warning => {
+          otherWarnings.forEach(warning => {
             logger.log(`  ${chalk.yellow('•')} ${warning.message}`);
           });
         }
