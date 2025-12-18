@@ -107,6 +107,7 @@ shipi18n translate <input> [options]
 - `-i, --incremental` - Only translate new/missing keys (skip existing translations)
 - `--skip-keys <keys>` - Keys to skip from translation (comma-separated exact paths)
 - `--skip-paths <patterns>` - Path patterns to skip (comma-separated, supports wildcards like `nav.*`)
+- `--context-file <path>` - JSON file with context annotations for disambiguation
 
 **Examples:**
 
@@ -209,6 +210,43 @@ shipi18n translate en.json --target es --skip-paths "states.*,config.*.internal"
 
 ✨ Successfully translated 2 files!
 ```
+
+### Context Annotations
+
+Improve translation quality for ambiguous words by providing context hints:
+
+```bash
+# Create a context file
+echo '{"close": "button - dismiss window", "address": "form field - location"}' > context.json
+
+# Translate with context
+shipi18n translate en.json --target es --context-file context.json
+```
+
+**Example context.json:**
+```json
+{
+  "close": "button label - dismiss/shut a dialog",
+  "address": "form field - physical location/street address",
+  "post": "verb - publish content"
+}
+```
+
+**Result:** "close" → "Cerrar" (not "Cerca"), "address" → "Dirección" (not "Dirigirse")
+
+### Legal Content Warning
+
+The CLI automatically warns when translating keys that may contain legal content:
+
+```
+⚠️  Legal content detected - review these keys:
+  • terms_of_service
+  • privacy_policy
+  • disclaimer
+  Machine-translated legal text may not be legally binding.
+```
+
+**Detected patterns:** terms, privacy, disclaimer, legal, tos, eula, copyright, license, gdpr, cookie_policy, compliance, data_protection, refund, warranty
 
 ### Keys Management
 
