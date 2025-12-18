@@ -1,6 +1,7 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, createWriteStream } from 'fs';
 import { join, parse, dirname } from 'path';
 import chalk from 'chalk';
+import archiver from 'archiver';
 import { Shipi18nAPI } from '../lib/api.js';
 import { getConfig } from '../lib/config.js';
 import { logger, formatError } from '../utils/logger.js';
@@ -22,6 +23,7 @@ export function translateCommand(program) {
     .option('--skip-keys <keys>', 'Keys to skip from translation (comma-separated exact paths)')
     .option('--skip-paths <patterns>', 'Paths to skip using wildcards (comma-separated, e.g., "states.*,config.*.secret")')
     .option('--context-file <path>', 'JSON file with context annotations for disambiguation (e.g., {"close": "button - dismiss"})')
+    .option('--zip [filename]', 'Output translations as ZIP file (default: translations.zip)')
     .action(async (input, options) => {
       const spinner = logger.spinner('Translating...');
 
@@ -186,19 +188,50 @@ export function translateCommand(program) {
         }
 
         let savedCount = 0;
-        for (const [langCode, content] of Object.entries(translations)) {
-          if (langCode === 'warnings' || langCode === 'fallbackInfo' || langCode === 'namespaceInfo' || langCode === 'skipped') continue;
 
-          // In incremental mode, merge with existing translations
+        // Prepare translations for output (filter metadata, apply merging)
+        const outputTranslations = {};
+        for (const [langCode, content] of Object.entries(translations)) {
+          if (langCode === 'warnings' || langCode === 'fallbackInfo' || langCode === 'namespaceInfo' || langCode === 'skipped' || langCode === 'contextEnhanced') continue;
+
           let finalContent = content;
           if (options.incremental && existingTranslations[langCode]) {
             finalContent = deepMerge(existingTranslations[langCode], content);
           }
+          outputTranslations[langCode] = finalContent;
+        }
 
-          const outputFile = join(outputDir, `${langCode}.json`);
-          writeFileSync(outputFile, JSON.stringify(finalContent, null, 2), 'utf8');
-          logger.success(`Saved: ${chalk.cyan(outputFile)}${options.incremental ? chalk.gray(' (merged)') : ''}`);
-          savedCount++;
+        if (options.zip) {
+          // ZIP output mode
+          const zipFileName = typeof options.zip === 'string' ? options.zip : 'translations.zip';
+          const zipPath = join(outputDir, zipFileName);
+
+          await new Promise((resolve, reject) => {
+            const output = createWriteStream(zipPath);
+            const archive = archiver('zip', { zlib: { level: 9 } });
+
+            output.on('close', resolve);
+            archive.on('error', reject);
+
+            archive.pipe(output);
+
+            for (const [langCode, content] of Object.entries(outputTranslations)) {
+              archive.append(JSON.stringify(content, null, 2), { name: `${langCode}.json` });
+              savedCount++;
+            }
+
+            archive.finalize();
+          });
+
+          logger.success(`Saved: ${chalk.cyan(zipPath)} (${savedCount} file${savedCount !== 1 ? 's' : ''})`);
+        } else {
+          // Individual files mode
+          for (const [langCode, content] of Object.entries(outputTranslations)) {
+            const outputFile = join(outputDir, `${langCode}.json`);
+            writeFileSync(outputFile, JSON.stringify(content, null, 2), 'utf8');
+            logger.success(`Saved: ${chalk.cyan(outputFile)}${options.incremental ? chalk.gray(' (merged)') : ''}`);
+            savedCount++;
+          }
         }
 
         // Show fallback info if any fallbacks were used

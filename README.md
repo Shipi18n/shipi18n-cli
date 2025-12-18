@@ -26,6 +26,7 @@ Command-line tool for translating locale files with [Shipi18n](https://shipi18n.
 - ✅ **Placeholder preservation** - Keep `{name}`, `{{value}}`, `%s`, etc. intact
 - ✅ **Key-based pricing** - 100 free translation keys (unlimited characters!)
 - ✅ **Language limits enforced** - FREE: 3 languages, STARTER: 10, PRO: unlimited
+- ✅ **ZIP output** - Bundle translations into a single downloadable ZIP file
 - ✅ **Config file support** - Save settings in `~/.shipi18n/config.yml`
 - ✅ **Translation Memory** - Manage keys with `shipi18n keys` commands
 - ✅ **Beautiful output** - Colored, formatted terminal output
@@ -108,6 +109,7 @@ shipi18n translate <input> [options]
 - `--skip-keys <keys>` - Keys to skip from translation (comma-separated exact paths)
 - `--skip-paths <patterns>` - Path patterns to skip (comma-separated, supports wildcards like `nav.*`)
 - `--context-file <path>` - JSON file with context annotations for disambiguation
+- `--zip [filename]` - Output translations as a single ZIP file (default: `translations.zip`)
 
 **Examples:**
 
@@ -140,6 +142,12 @@ shipi18n translate en.json --target es --skip-paths "states.*,config.*.secret"
 shipi18n translate en.json --target es,fr \
   --skip-keys "brandName" \
   --skip-paths "states.*,internal.*"
+
+# Output as ZIP file (default name: translations.zip)
+shipi18n translate en.json --target es,fr,de --zip
+
+# Output as ZIP with custom filename
+shipi18n translate en.json --target es,fr,de --zip my-translations.zip
 ```
 
 ### Fallback Behavior
@@ -247,6 +255,39 @@ The CLI automatically warns when translating keys that may contain legal content
 ```
 
 **Detected patterns:** terms, privacy, disclaimer, legal, tos, eula, copyright, license, gdpr, cookie_policy, compliance, data_protection, refund, warranty
+
+### ZIP Output
+
+Bundle all translations into a single ZIP file for easy distribution:
+
+```bash
+# Default filename (translations.zip)
+shipi18n translate en.json --target es,fr,de,ja --zip
+
+# Custom filename
+shipi18n translate en.json --target es,fr,de,ja --zip locales-v2.zip
+
+# With custom output directory
+shipi18n translate en.json --target es,fr --zip --output ./dist/i18n
+```
+
+**Output:**
+```
+✔ Translated 50 keys to 4 languages!
+✓ Saved: ./locales/translations.zip (4 files)
+
+✨ Successfully translated 4 files!
+   Output: ./locales
+```
+
+**ZIP structure:**
+```
+translations.zip
+├── es.json
+├── fr.json
+├── de.json
+└── ja.json
+```
 
 ### Keys Management
 
