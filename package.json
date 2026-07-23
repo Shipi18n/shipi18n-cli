@@ -1,6 +1,6 @@
 {
   "name": "@shipi18n/cli",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Command-line tool for translating locale files with Shipi18n",
   "main": "src/index.js",
   "type": "module",
@@ -10,7 +10,8 @@
     "src/lib",
     "src/utils",
     "src/index.js",
-    "README.md"
+    "README.md",
+    "NOTICE"
   ],
   "bin": {
     "shipi18n": "./bin/shipi18n.js"
@@ -40,7 +41,7 @@
     "shipi18n"
   ],
   "author": "Shipi18n",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "archiver": "^7.0.1",
     "chalk": "^5.3.0",
@@ -63,5 +64,8 @@
   "bugs": {
     "url": "https://github.com/Shipi18n/shipi18n-cli/issues"
   },
-  "homepage": "https://shipi18n.com"
+  "homepage": "https://shipi18n.com",
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@shipi18n/cli)](https://www.npmjs.com/package/@shipi18n/cli)
 [![npm downloads](https://img.shields.io/npm/dw/@shipi18n/cli)](https://www.npmjs.com/package/@shipi18n/cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub last commit](https://img.shields.io/github/last-commit/Shipi18n/shipi18n-cli)](https://github.com/Shipi18n/shipi18n-cli)
 [![CI](https://github.com/Shipi18n/shipi18n-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/Shipi18n/shipi18n-cli/actions)
 [![codecov](https://codecov.io/gh/Shipi18n/shipi18n-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/Shipi18n/shipi18n-cli)
@@ -585,7 +585,7 @@ shipi18n --help
 
 ## License
 
-MIT
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
 
 ---
 
