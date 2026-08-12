@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **This repository has moved.** `@shipi18n/cli` now lives in the [Shipi18n/shipi18n](https://github.com/Shipi18n/shipi18n) monorepo, at [`packages/cli`](https://github.com/Shipi18n/shipi18n/tree/master/packages/cli).
+>
+> This repo is archived and read-only. It holds the v1 history only — v2 (bring-your-own-LLM) and everything after it are developed and released from the monorepo. The npm package name is unchanged: `npm i @shipi18n/cli`.
+
 # @shipi18n/cli
 
 [![npm version](https://img.shields.io/npm/v/@shipi18n/cli)](https://www.npmjs.com/package/@shipi18n/cli)
